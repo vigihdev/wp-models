@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Vigihdev\WpModels\Repositories;
 
 use Vigihdev\WpModels\Contracts\{PostInterface, PostRepositoryInterface};
-use Vigihdev\WpModels\DTOs\{PostDto, TermDto};
+use Vigihdev\WpModels\DTOs\{AuthorDto, PostDto, TermDto};
 use WP_Term;
+use WpOrg\Requests\Auth;
 
 final class PostRepository implements PostRepositoryInterface
 {
@@ -119,5 +120,55 @@ final class PostRepository implements PostRepositoryInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Mengambil daftar taksonomi berdasarkan ID post
+     *
+     * @return TermDto[] Daftar taksonomi dalam format array objek TermDto
+     */
+    public function getTaxonomies(): array
+    {
+        // Mengambil semua taxonomy terms yang terkait dengan post
+        $taxonomies = [];
+
+        // Dapatkan semua registered taxonomies
+        $registered_taxonomies = get_taxonomies(['object_type' => [$this->post->getPostType()]]);
+
+        foreach ($registered_taxonomies as $taxonomy) {
+            $terms = wp_get_post_terms($this->post->getId(), $taxonomy);
+
+            if (!empty($terms) && !is_wp_error($terms)) {
+                foreach ($terms as $term) {
+                    if ($term instanceof WP_Term) {
+                        $taxonomies[] = TermDto::fromTerm(term: $term);
+                    }
+                }
+            }
+        }
+
+        return $taxonomies;
+    }
+
+    /**
+     * Mendapatkan author dari post
+     *
+     * @return AuthorDto|null Instance AuthorInterface jika author ditemukan, null jika tidak
+     */
+    public function getAuthor(): ?AuthorDto
+    {
+        $authorId = $this->post->getPostAuthor();
+
+        if ($authorId <= 0) {
+            return null;
+        }
+
+        $user = get_user_by('ID', $authorId);
+
+        if (!$user) {
+            return null;
+        }
+
+        return AuthorDto::fromUser(user: $user);
     }
 }
