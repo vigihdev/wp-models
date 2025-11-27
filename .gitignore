@@ -3,6 +3,7 @@ composer.lock
 .vscode/
 .DS_Store
 .phpunit.result.cache
+.phpunit.cache
 /coverage/
 dev.php
 GEMINI.md
@@ -10,3 +11,4 @@ GEMINI.md
 .keys
 .env*
 /resource/
+.lingma
