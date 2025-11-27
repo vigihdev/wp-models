@@ -80,6 +80,7 @@ final class AuthorDto implements AuthorInterface
         return $this->userLogin;
     }
 
+
     /**
      * Mendapatkan nice name dari author
      *
